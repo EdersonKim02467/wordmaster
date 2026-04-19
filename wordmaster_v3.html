@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordMaster — 유튜브 영어 단어장</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════
+   TOKENS
+═══════════════════════════════ */
+:root {
+  --bg:       #07080f;
+  --s1:       #0e0f1a;
+  --s2:       #161728;
+  --s3:       #1e2035;
+  --border:   #252640;
+  --border2:  #303055;
+
+  --w:  #3dffa0;   /* word — green */
+  --p:  #ff5fa0;   /* phrase — pink */
+  --n:  #ffd84d;   /* native — yellow */
+  --a:  #5b72ff;   /* accent blue */
+
+  --tx:    #eeeef8;
+  --tx2:   #7878aa;
+  --tx3:   #40405a;
+
+  --r:  14px;
+  --rs: 9px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--tx);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* subtle grid bg */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(91,114,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91,114,255,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none; z-index:0;
+}
+
+/* ═══════════════════════════════
+   HEADER
+═══════════════════════════════ */
+header {
+  position: sticky; top:0; z-index:100;
+  background: rgba(7,8,15,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 58px; gap: 16px;
+}
+
+.logo {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  background: linear-gradient(120deg, var(--w), var(--a));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+.header-stats { display:flex; gap:8px; flex-wrap:wrap; }
+
+.chip {
+  display:flex; align-items:center; gap:5px;
+  padding: 4px 11px;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 20px; font-size:12px; color:var(--tx2);
+  white-space: nowrap;
+}
+.chip b { font-family:'JetBrains Mono',monospace; color:var(--w); }
+
+.header-right { display:flex; gap:8px; align-items:center; }
+
+.hbtn {
+  display:flex; align-items:center; gap:6px;
+  padding: 6px 13px;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 20px; font-size:12px; color:var(--tx2);
+  cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.hbtn:hover { border-color:var(--a); color:var(--tx); }
+.hbtn .dot { width:7px;height:7px;border-radius:50%;background:var(--p); }
+.hbtn .dot.on { background:var(--w); }
+
+/* ═══════════════════════════════
+   LAYOUT
+═══════════════════════════════ */
+.wrap {
+  position: relative; z-index:1;
+  max-width: 1100px; margin:0 auto;
+  padding: 28px 24px;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ═══════════════════════════════
+   LEFT PANEL
+═══════════════════════════════ */
+.left { display:flex; flex-direction:column; gap:20px; }
+
+/* session dots bar */
+.sbar {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 18px;
+  display:flex; align-items:center; gap:12px;
+}
+.sbar-label { font-size:12px; color:var(--tx2); white-space:nowrap; }
+.sdots { display:flex; gap:7px; }
+.sdot {
+  width:30px; height:30px; border-radius:50%;
+  border:2px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--tx3);
+  transition:all .3s;
+}
+.sdot.done  { background:var(--w); border-color:var(--w); color:#07080f; }
+.sdot.curr  { border-color:var(--a); color:var(--a);
+              box-shadow: 0 0 0 3px rgba(91,114,255,.15);
+              animation: spulse 2s infinite; }
+.sdot.test  { background:var(--p); border-color:var(--p); color:#fff; font-size:13px; }
+@keyframes spulse {
+  0%,100%{ box-shadow:0 0 0 0 rgba(91,114,255,.3); }
+  50%    { box-shadow:0 0 0 6px rgba(91,114,255,0); }
+}
+
+/* gate banner */
+.gate-banner {
+  display:none; align-items:center; gap:12px;
+  padding:14px 18px;
+  background:rgba(255,95,160,.07);
+  border:1px solid var(--p);
+  border-radius:var(--rs);
+  font-size:13px; line-height:1.5;
+}
+.gate-banner.on { display:flex; }
+.gate-banner .gbtn {
+  margin-left:auto; padding:7px 16px;
+  background:var(--p); border:none; border-radius:var(--rs);
+  color:#fff; font-size:12px; font-weight:700; cursor:pointer;
+  white-space:nowrap; transition:opacity .2s;
+}
+.gate-banner .gbtn:hover { opacity:.85; }
+
+/* api banner */
+.api-banner {
+  display:none; align-items:center; gap:12px;
+  padding:14px 18px;
+  background:rgba(91,114,255,.08);
+  border:1px solid var(--a);
+  border-radius:var(--rs);
+  font-size:13px; line-height:1.5;
+}
+.api-banner.on { display:flex; }
+.api-banner strong { color:var(--w); }
+.api-banner small  { color:var(--tx2); display:block; margin-top:2px; font-size:11px; }
+.api-banner .gbtn  {
+  margin-left:auto; padding:7px 16px;
+  background:var(--a); border:none; border-radius:var(--rs);
+  color:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;
+}
+
+/* URL input card */
+.url-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 22px;
+}
+.url-card-title {
+  font-size:13px; font-weight:700; color:var(--tx2);
+  margin-bottom:14px; display:flex; align-items:center; gap:8px;
+}
+.url-row { display:flex; gap:10px; }
+.url-input {
+  flex:1;
+  background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs);
+  padding:11px 15px;
+  color:var(--tx); font-family:'JetBrains Mono',monospace; font-size:13px;
+  outline:none; transition:border-color .2s;
+}
+.url-input:focus { border-color:var(--a); }
+.url-input::placeholder { color:var(--tx3); font-family:'Noto Sans KR',sans-serif; }
+
+.btn {
+  padding:11px 20px; border-radius:var(--rs);
+  border:none; font-family:'Noto Sans KR',sans-serif;
+  font-size:13px; font-weight:700;
+  cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.btn-a  { background:linear-gradient(135deg,var(--a),#7b8fff); color:#fff; }
+.btn-a:hover  { transform:translateY(-1px); box-shadow:0 4px 18px rgba(91,114,255,.4); }
+.btn-a:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn-p  { background:linear-gradient(135deg,var(--p),#ff85bb); color:#fff; }
+.btn-p:hover  { transform:translateY(-1px); box-shadow:0 4px 18px rgba(255,95,160,.35); }
+.btn-w  { background:linear-gradient(135deg,var(--w),#7dffc0); color:#07080f; }
+.btn-ol { background:transparent; border:1px solid var(--border); color:var(--tx2); }
+.btn-ol:hover { border-color:var(--a); color:var(--tx); }
+
+/* loading */
+.loading {
+  display:none; text-align:center; padding:36px;
+}
+.spinner {
+  width:36px; height:36px; border:3px solid var(--border2);
+  border-top-color:var(--a); border-radius:50%;
+  margin:0 auto 14px; animation:spin .7s linear infinite;
+}
+@keyframes spin{ to{transform:rotate(360deg)} }
+.loading-txt { font-size:13px; color:var(--tx2); }
+
+/* ─── VOCAB RESULT CARD ─── */
+.vocab-card {
+  background:var(--s1); border:1px solid var(--border);
+  border-radius:var(--r); overflow:hidden;
+  display:none;
+}
+.vocab-card.on { display:block; }
+
+.vc-header {
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+}
+.vc-title { font-size:14px; font-weight:700; }
+.vc-meta  { font-size:12px; color:var(--tx2); }
+
+.vc-tabs {
+  display:flex; border-bottom:1px solid var(--border);
+}
+.vtab {
+  flex:1; padding:11px 0;
+  background:transparent; border:none;
+  font-size:12px; font-weight:700;
+  color:var(--tx3); cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .18s;
+}
+.vtab:hover { color:var(--tx2); }
+.vtab.on { color:var(--tx); border-bottom-color:var(--a); background:rgba(91,114,255,.05); }
+.vtab.on.tw { border-bottom-color:var(--w); color:var(--w); background:rgba(61,255,160,.04); }
+.vtab.on.tp { border-bottom-color:var(--p); color:var(--p); background:rgba(255,95,160,.04); }
+.vtab.on.tn { border-bottom-color:var(--n); color:var(--n); background:rgba(255,216,77,.04); }
+
+.vc-body { padding:16px; }
+
+/* word item */
+.wi {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:12px 14px; margin-bottom:8px;
+  background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs); cursor:default;
+  transition:all .18s; position:relative;
+  animation: wifade .35s ease both;
+}
+@keyframes wifade {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.wi:hover { border-color:var(--border2); background:var(--s3); }
+.wi-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; color:var(--tx3); min-width:20px; padding-top:2px;
+}
+.wi-body { flex:1; min-width:0; }
+.wi-en {
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px; font-weight:700;
+  margin-bottom:3px;
+}
+.wi-ko { font-size:13px; color:var(--tx2); margin-bottom:4px; }
+.wi-ex { font-size:12px; color:var(--tx3); font-style:italic; }
+.wi-tag {
+  font-size:10px; font-weight:700;
+  padding:2px 7px; border-radius:8px;
+  position:absolute; top:10px; right:10px;
+}
+.tt-w { background:rgba(61,255,160,.12); color:var(--w); }
+.tt-p { background:rgba(255,95,160,.12); color:var(--p); }
+.tt-n { background:rgba(255,216,77,.12);  color:var(--n); }
+
+.empty-hint {
+  text-align:center; padding:40px 20px;
+  color:var(--tx3); font-size:13px; line-height:2;
+}
+.empty-hint .ei { font-size:36px; margin-bottom:10px; }
+
+/* legend */
+.legend {
+  display:flex; gap:16px; flex-wrap:wrap;
+  padding:12px 20px; border-top:1px solid var(--border);
+  font-size:11px; color:var(--tx2);
+}
+.li { display:flex; align-items:center; gap:5px; }
+.ldot { width:8px;height:8px;border-radius:50%; }
+
+/* ═══════════════════════════════
+   RIGHT PANEL — session history
+═══════════════════════════════ */
+.right { display:flex; flex-direction:column; gap:16px; }
+
+.panel {
+  background:var(--s1); border:1px solid var(--border);
+  border-radius:var(--r); overflow:hidden;
+}
+.panel-hd {
+  padding:13px 16px;
+  border-bottom:1px solid var(--border);
+  font-size:12px; font-weight:700; color:var(--tx2);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.panel-body { padding:12px; }
+
+/* stat grid */
+.stat-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.stat-box {
+  background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs); padding:12px 14px; text-align:center;
+}
+.stat-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:24px; font-weight:700; line-height:1;
+  margin-bottom:4px;
+}
+.stat-lbl { font-size:11px; color:var(--tx2); }
+
+/* history list */
+.hist-item {
+  padding:8px 10px; margin-bottom:6px;
+  background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs); font-size:12px;
+  display:flex; align-items:center; gap:8px;
+}
+.hist-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; color:var(--tx3); min-width:22px;
+}
+.hist-info { flex:1; min-width:0; }
+.hist-url { color:var(--tx2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hist-cnt { font-size:11px; color:var(--tx3); margin-top:2px; }
+.hist-badges { display:flex; gap:4px; flex-shrink:0; }
+.hbadge {
+  font-size:9px; font-weight:700; padding:2px 5px;
+  border-radius:5px;
+}
+
+/* test button area */
+.test-cta {
+  padding:14px 16px;
+  background:rgba(255,95,160,.06);
+  border:1px solid var(--p);
+  border-radius:var(--rs);
+  text-align:center;
+}
+.test-cta p { font-size:12px; color:var(--tx2); margin-bottom:10px; line-height:1.6; }
+
+/* ═══════════════════════════════
+   MODALS
+═══════════════════════════════ */
+.overlay {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.8); backdrop-filter:blur(8px);
+  z-index:900; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+.overlay.on { opacity:1; pointer-events:all; }
+
+.mbox {
+  background:var(--s1); border:1px solid var(--border2);
+  border-radius:var(--r); padding:28px;
+  width:360px; max-height:90vh; overflow-y:auto;
+  transform:translateY(14px); transition:transform .25s;
+}
+.overlay.on .mbox { transform:translateY(0); }
+.mbox.wide { width:540px; }
+
+.mh { font-family:'Black Han Sans',sans-serif; font-size:24px; letter-spacing:1px; margin-bottom:6px; }
+.ms { font-size:13px; color:var(--tx2); margin-bottom:20px; line-height:1.6; }
+
+/* level grid */
+.lv-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:18px; }
+.lv-opt {
+  padding:14px 10px; border:2px solid var(--border);
+  border-radius:var(--rs); cursor:pointer; text-align:center;
+  transition:all .18s;
+}
+.lv-opt:hover { border-color:var(--a); background:rgba(91,114,255,.05); }
+.lv-opt.sel  { border-color:var(--a); background:rgba(91,114,255,.1); }
+.lv-em { font-size:26px; margin-bottom:5px; }
+.lv-nm { font-size:14px; font-weight:700; }
+.lv-ds { font-size:11px; color:var(--tx2); margin-top:2px; }
+
+/* api key */
+.ak-wrap { position:relative; margin-bottom:12px; }
+.ak-field {
+  width:100%; background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs); padding:11px 40px 11px 14px;
+  color:var(--tx); font-family:'JetBrains Mono',monospace; font-size:13px;
+  outline:none; transition:border-color .2s; letter-spacing:.5px;
+}
+.ak-field:focus { border-color:var(--a); }
+.ak-field::placeholder { color:var(--tx3); font-family:'Noto Sans KR',sans-serif; letter-spacing:0; }
+.ak-eye {
+  position:absolute; right:11px; top:50%; transform:translateY(-50%);
+  background:none; border:none; color:var(--tx3); cursor:pointer; font-size:15px;
+}
+.ak-hint {
+  font-size:12px; color:var(--tx2); line-height:1.7;
+  padding:10px 13px; background:var(--s2); border-radius:var(--rs); margin-bottom:14px;
+}
+.ak-hint a { color:var(--a); text-decoration:none; }
+.ak-msg { font-size:12px; text-align:center; min-height:18px; margin-bottom:12px; }
+
+/* ═══════════════════════════════
+   TEST OVERLAY
+═══════════════════════════════ */
+.test-overlay {
+  position:fixed; inset:0; background:var(--bg);
+  z-index:800; overflow-y:auto; padding:28px;
+  display:none;
+}
+.test-overlay.on { display:block; }
+.tw { max-width:660px; margin:0 auto; }
+
+.test-top {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:22px;
+}
+.test-h { font-family:'Black Han Sans',sans-serif; font-size:32px; letter-spacing:1px; }
+.test-sub { font-size:13px; color:var(--tx2); margin-top:3px; }
+.live-sc { font-family:'JetBrains Mono',monospace; font-size:20px; color:var(--p); }
+
+.tpbar { background:var(--s2); height:3px; border-radius:2px; margin-bottom:26px; overflow:hidden; }
+.tpfill { height:100%; background:linear-gradient(90deg,var(--a),var(--p)); transition:width .3s; }
+
+.qcard {
+  background:var(--s1); border:1px solid var(--border);
+  border-radius:var(--r); padding:24px; margin-bottom:14px;
+}
+.qbadge {
+  display:inline-block; font-size:11px; font-weight:700;
+  padding:3px 9px; border-radius:8px; margin-bottom:13px;
+}
+.qb1 { background:rgba(61,255,160,.12); color:var(--w); }
+.qb2 { background:rgba(255,95,160,.12); color:var(--p); }
+.qb3 { background:rgba(255,216,77,.12);  color:var(--n); }
+
+.qprompt {
+  font-size:20px; font-weight:700; margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace; line-height:1.4;
+}
+.qprompt.ko { font-family:'Noto Sans KR',sans-serif; font-size:17px; }
+
+.ans-in {
+  width:100%; background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs); padding:11px 14px;
+  color:var(--tx); font-size:14px;
+  font-family:'Noto Sans KR',sans-serif;
+  outline:none; transition:border-color .2s;
+}
+.ans-in:focus { border-color:var(--a); }
+.ans-in.ok   { border-color:var(--w); background:rgba(61,255,160,.04); }
+.ans-in.fail { border-color:var(--p); background:rgba(255,95,160,.04); }
+
+.ans-fb { margin-top:9px; font-size:13px; display:none; }
+.ans-fb.on { display:block; }
+.fb-ok   { color:var(--w); }
+.fb-fail { color:var(--p); }
+
+.ck-btn {
+  margin-top:10px; padding:8px 18px;
+  font-size:12px; border:1px solid var(--border2);
+  border-radius:var(--rs); background:transparent;
+  color:var(--tx2); cursor:pointer; transition:all .18s;
+}
+.ck-btn:hover { border-color:var(--a); color:var(--tx); }
+
+.tnav { display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+.qctr { font-size:13px; color:var(--tx2); }
+
+/* score result */
+.sc-res { text-align:center; padding:48px 24px; display:none; }
+.sc-res.on { display:block; }
+.sc-big {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:88px; letter-spacing:2px;
+  background:linear-gradient(135deg,var(--a),var(--p));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  line-height:1; margin-bottom:8px;
+}
+.sc-msg { font-size:17px; color:var(--tx2); margin-bottom:28px; }
+.sc-bd {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:12px; max-width:400px; margin:0 auto 24px;
+}
+.sc-item {
+  background:var(--s2); border:1px solid var(--border);
+  border-radius:var(--rs); padding:14px;
+}
+.sc-num { font-size:26px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+.sc-lbl { font-size:11px; color:var(--tx2); margin-top:3px; }
+.sc-note { font-size:13px; color:var(--n); margin-bottom:22px; min-height:20px; }
+
+/* tooltip */
+.tip {
+  position:fixed; background:var(--s1); border:1px solid var(--border2);
+  border-radius:var(--rs); padding:9px 13px; font-size:13px;
+  z-index:999; pointer-events:none; opacity:0; transition:opacity .15s;
+  max-width:200px; box-shadow:0 8px 30px rgba(0,0,0,.6);
+}
+.tip.on { opacity:1; }
+.tip-en { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; margin-bottom:3px; }
+.tip-ko { color:var(--tx2); font-size:12px; }
+
+/* scrollbar */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+@media(max-width:820px){
+  .wrap { grid-template-columns:1fr; }
+  .right { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header>
+  <div class="logo">WORD MASTER</div>
+  <div class="header-stats">
+    <div class="chip">세션 <b id="hSes">0</b>/5</div>
+    <div class="chip">시험 <b id="hTest">0</b>회</div>
+    <div class="chip">총 단어 <b id="hWords">0</b>개</div>
+  </div>
+  <div class="header-right">
+    <div class="hbtn" id="akChip" onclick="openAkModal()">
+      <div class="dot" id="akDot"></div><span id="akLabel">API 키</span>
+    </div>
+    <div class="hbtn" onclick="openLvModal()">
+      <span>📊</span><span id="lvLabel">수준 설정</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════ BODY ═══════ -->
+<div class="wrap">
+
+  <!-- LEFT -->
+  <div class="left">
+
+    <!-- api banner -->
+    <div class="api-banner" id="apiBanner">
+      <div>🔑</div>
+      <div><strong>API 키를 먼저 설정하세요</strong><small>우측 상단 'API 키' 버튼을 클릭하세요.</small></div>
+      <button class="gbtn" onclick="openAkModal()">키 입력</button>
+    </div>
+
+    <!-- gate banner -->
+    <div class="gate-banner" id="gateBanner">
+      <span>🔒</span>
+      <span>5회 학습 완료! <b>시험을 먼저 통과</b>해야 다음 영상을 분석할 수 있습니다.</span>
+      <button class="gbtn" onclick="openTest()">시험 시작 →</button>
+    </div>
+
+    <!-- session bar -->
+    <div class="sbar">
+      <span class="sbar-label">학습 진행</span>
+      <div class="sdots" id="sdots">
+        <div class="sdot curr" data-n="1">1</div>
+        <div class="sdot" data-n="2">2</div>
+        <div class="sdot" data-n="3">3</div>
+        <div class="sdot" data-n="4">4</div>
+        <div class="sdot" data-n="5">5</div>
+        <div class="sdot test" data-n="6">✎</div>
+      </div>
+    </div>
+
+    <!-- URL input card -->
+    <div class="url-card">
+      <div class="url-card-title">
+        <span>📺</span> 유튜브 링크 분석
+      </div>
+      <div class="url-row">
+        <input id="ytUrl" class="url-input" type="text"
+               placeholder="https://www.youtube.com/watch?v=... 링크를 붙여넣으세요" />
+        <button class="btn btn-a" id="anaBtn" onclick="analyze()">분석</button>
+      </div>
+    </div>
+
+    <!-- loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-txt" id="loadingTxt">분석 중...</div>
+    </div>
+
+    <!-- vocab result -->
+    <div class="vocab-card" id="vocabCard">
+      <div class="vc-header">
+        <div>
+          <div class="vc-title" id="vcTitle">단어장</div>
+          <div class="vc-meta" id="vcMeta"></div>
+        </div>
+        <button class="btn btn-p" style="padding:7px 14px;font-size:12px" onclick="openTest()">📝 시험 보기</button>
+      </div>
+      <div class="vc-tabs">
+        <button class="vtab on"  onclick="setTab('all',this)">전체</button>
+        <button class="vtab tw"  onclick="setTab('word',this)">🟢 단어</button>
+        <button class="vtab tp"  onclick="setTab('phrase',this)">🔴 구동사</button>
+        <button class="vtab tn"  onclick="setTab('native',this)">🟡 원어민</button>
+      </div>
+      <div class="vc-body" id="vcBody"></div>
+      <div class="legend">
+        <div class="li"><div class="ldot" style="background:var(--w)"></div>영어 단어</div>
+        <div class="li"><div class="ldot" style="background:var(--p)"></div>구동사·숙어</div>
+        <div class="li"><div class="ldot" style="background:var(--n)"></div>원어민 표현</div>
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <!-- stats -->
+    <div class="panel">
+      <div class="panel-hd">📊 학습 통계</div>
+      <div class="panel-body">
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-num" id="stSes" style="color:var(--w)">0</div>
+            <div class="stat-lbl">누적 세션</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stWords" style="color:var(--a)">0</div>
+            <div class="stat-lbl">총 단어</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stTests" style="color:var(--p)">0</div>
+            <div class="stat-lbl">시험 횟수</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stAvg" style="color:var(--n)">-</div>
+            <div class="stat-lbl">평균 점수</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- session history -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span>🗂️ 세션 기록</span>
+        <button class="btn-ol btn" style="padding:3px 10px;font-size:11px" onclick="clearHistory()">초기화</button>
+      </div>
+      <div class="panel-body" id="histBody">
+        <div class="empty-hint" style="padding:20px 0">
+          <div class="ei" style="font-size:28px">📂</div>
+          아직 분석 기록이 없습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- test CTA -->
+    <div class="test-cta" id="testCta" style="display:none">
+      <p>단어장에 단어가 쌓였습니다!<br>시험으로 기억을 확인해보세요.</p>
+      <button class="btn btn-p" style="width:100%;padding:11px" onclick="openTest()">📝 지금 시험 보기</button>
+    </div>
+
+  </div><!-- /right -->
+
+</div><!-- /wrap -->
+
+<!-- ═══════ TOOLTIP ═══════ -->
+<div class="tip" id="tip">
+  <div class="tip-en" id="tipEn"></div>
+  <div class="tip-ko" id="tipKo"></div>
+</div>
+
+<!-- ═══════ MODAL: API KEY ═══════ -->
+<div class="overlay" id="akOverlay">
+  <div class="mbox">
+    <div class="mh">🔑 API 키 설정</div>
+    <div class="ms">Anthropic API 키를 입력하면 AI 단어 분석이 활성화됩니다.<br>키는 이 기기 브라우저에만 저장됩니다.</div>
+    <div class="ak-hint">
+      📌 발급 방법:
+      <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> 접속
+      → 가입/로그인 → <b>API Keys</b> → <b>Create Key</b><br>
+      생성된 <code style="color:var(--w);font-family:monospace">sk-ant-...</code> 키를 아래에 붙여넣기
+    </div>
+    <div class="ak-wrap">
+      <input class="ak-field" id="akField" type="password" placeholder="sk-ant-api03-..." autocomplete="off"/>
+      <button class="ak-eye" onclick="toggleEye()">👁</button>
+    </div>
+    <div class="ak-msg" id="akMsg"></div>
+    <button class="btn btn-a" style="width:100%;padding:12px;margin-bottom:9px" onclick="saveAk()">저장 및 검증</button>
+    <button class="btn btn-ol" style="width:100%;padding:10px" onclick="closeAkModal()">취소</button>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: LEVEL ═══════ -->
+<div class="overlay" id="lvOverlay">
+  <div class="mbox">
+    <div class="mh">📊 학습 수준 설정</div>
+    <div class="ms">본인의 영어 수준을 선택하세요. 수준에 맞는 어휘가 선별됩니다.</div>
+    <div class="lv-grid">
+      <div class="lv-opt" data-lv="beginner" onclick="pickLv(this)"><div class="lv-em">🌱</div><div class="lv-nm">초보</div><div class="lv-ds">기초 단어</div></div>
+      <div class="lv-opt" data-lv="middle"   onclick="pickLv(this)"><div class="lv-em">📚</div><div class="lv-nm">중학생</div><div class="lv-ds">교과서 수준</div></div>
+      <div class="lv-opt" data-lv="high"     onclick="pickLv(this)"><div class="lv-em">🎓</div><div class="lv-nm">고등학생</div><div class="lv-ds">수능/내신</div></div>
+      <div class="lv-opt" data-lv="college"  onclick="pickLv(this)"><div class="lv-em">🏛️</div><div class="lv-nm">대학생</div><div class="lv-ds">토익/토플</div></div>
+      <div class="lv-opt" data-lv="worker"   onclick="pickLv(this)" style="grid-column:1/-1"><div class="lv-em">💼</div><div class="lv-nm">직장인</div><div class="lv-ds">비즈니스 영어</div></div>
+    </div>
+    <button class="btn btn-a" style="width:100%;padding:12px" onclick="closeLvModal()">확인</button>
+  </div>
+</div>
+
+<!-- ═══════ TEST OVERLAY ═══════ -->
+<div class="test-overlay" id="testOverlay">
+  <div class="tw">
+    <div class="test-top">
+      <div>
+        <div class="test-h">📝 VOCABULARY TEST</div>
+        <div class="test-sub" id="testSub">20문제 무작위 출제</div>
+      </div>
+      <div class="live-sc" id="liveSc">0 / 0</div>
+    </div>
+    <div class="tpbar"><div class="tpfill" id="tpFill" style="width:0%"></div></div>
+
+    <div id="qCont"></div>
+
+    <!-- score result -->
+    <div class="sc-res" id="scRes">
+      <div class="sc-big" id="scBig">0점</div>
+      <div class="sc-msg" id="scMsg">수고하셨습니다!</div>
+      <div class="sc-bd">
+        <div class="sc-item"><div class="sc-num" id="scC" style="color:var(--w)">0</div><div class="sc-lbl">정답</div></div>
+        <div class="sc-item"><div class="sc-num" id="scW" style="color:var(--p)">0</div><div class="sc-lbl">오답</div></div>
+        <div class="sc-item"><div class="sc-num" id="scT">0</div><div class="sc-lbl">총 문제</div></div>
+      </div>
+      <div class="sc-note" id="scNote"></div>
+      <button class="btn btn-a" style="padding:13px 40px;font-size:15px" onclick="closeTest()">학습으로 돌아가기</button>
+    </div>
+
+    <div class="tnav" id="tNav">
+      <button class="btn btn-ol" id="prevBtn" onclick="prevQ()">← 이전</button>
+      <span class="qctr" id="qCtr">1 / 20</span>
+      <button class="btn btn-a"  id="nextBtn" onclick="nextQ()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════ -->
+<script>
+// ─── CONSTANTS ────────────────────────────────────
+const SK  = 'wm_v1';
+const AK  = 'wm_apikey';
+const LV_NAME = { beginner:'초보', middle:'중학생', high:'고등학생', college:'대학생', worker:'직장인' };
+
+// ─── STATE ────────────────────────────────────────
+let S = {
+  level: null,
+  sessionCount:   0,
+  testCount:      0,
+  wordBank:       [],   // { type, en, ko, example, sessionId }
+  sessionVocab:   [],   // vocab in current 5-session cycle
+  history:        [],   // [{ url, title, count, date }]
+  cycleWrong:     [],   // wrong items accumulated
+  totalTestQs:    0,
+  gated:          false,
+  scores:         [],   // test scores
+};
+
+function saveS() { try{ localStorage.setItem(SK, JSON.stringify(S)); }catch(e){} }
+function loadS() { try{ const d=localStorage.getItem(SK); if(d) S={...S,...JSON.parse(d)}; }catch(e){} }
+
+// ─── API KEY ──────────────────────────────────────
+function getAk()    { return localStorage.getItem(AK)||''; }
+function setAk(k)   { k ? localStorage.setItem(AK,k) : localStorage.removeItem(AK); }
+
+function openAkModal() {
+  const cur = getAk();
+  document.getElementById('akField').value = cur;
+  document.getElementById('akField').type  = 'password';
+  const msg = document.getElementById('akMsg');
+  msg.textContent = cur ? '✅ 저장된 키가 있습니다.' : '';
+  msg.style.color = 'var(--w)';
+  document.getElementById('akOverlay').classList.add('on');
+}
+function closeAkModal() { document.getElementById('akOverlay').classList.remove('on'); }
+function toggleEye() {
+  const f=document.getElementById('akField');
+  f.type = f.type==='password' ? 'text' : 'password';
+}
+
+async function saveAk() {
+  const val = document.getElementById('akField').value.trim();
+  const msg = document.getElementById('akMsg');
+  if(!val){ msg.textContent='❌ 키를 입력하세요.'; msg.style.color='var(--p)'; return; }
+  if(!val.startsWith('sk-ant-')){
+    msg.textContent='⚠️ sk-ant- 로 시작하는 키를 입력하세요.';
+    msg.style.color='var(--n)'; return;
+  }
+  msg.textContent='🔄 확인 중...'; msg.style.color='var(--tx2)';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': val,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:5,
+        messages:[{role:'user',content:'hi'}]
+      })
+    });
+    const data = await res.json();
+    if(data.error){ msg.textContent='❌ '+data.error.message; msg.style.color='var(--p)'; return; }
+    setAk(val);
+    msg.textContent='✅ 키가 확인되었습니다!'; msg.style.color='var(--w)';
+    updateAkUI();
+    setTimeout(closeAkModal, 900);
+  } catch(e){
+    msg.textContent='❌ 연결 오류: '+e.message; msg.style.color='var(--p)';
+  }
+}
+
+function updateAkUI() {
+  const has = !!getAk();
+  document.getElementById('akDot').classList.toggle('on', has);
+  document.getElementById('akLabel').textContent = has ? 'API ✓ (저장됨)' : 'API 키 설정';
+  document.getElementById('apiBanner').classList.toggle('on', !has);
+}
+
+// ─── LEVEL ────────────────────────────────────────
+function openLvModal() {
+  document.querySelectorAll('.lv-opt').forEach(e=>e.classList.toggle('sel',e.dataset.lv===S.level));
+  document.getElementById('lvOverlay').classList.add('on');
+}
+function closeLvModal() { document.getElementById('lvOverlay').classList.remove('on'); }
+function pickLv(el) {
+  document.querySelectorAll('.lv-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  S.level=el.dataset.lv; saveS();
+  document.getElementById('lvLabel').textContent=LV_NAME[S.level];
+}
+
+// ─── CLAUDE API HELPER ────────────────────────────
+async function claude(prompt, maxTokens=1400) {
+  const key=getAk();
+  if(!key) throw new Error('API 키가 없습니다.');
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: maxTokens,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  const data = await res.json();
+  if(data.error) throw new Error(data.error.message);
+  return (data.content||[]).map(b=>b.text||'').join('').trim();
+}
+
+// ─── ANALYZE ──────────────────────────────────────
+let curVocab = [];
+let curTab   = 'all';
+
+async function analyze() {
+  if(!getAk()){ openAkModal(); return; }
+  if(!S.level){ openLvModal(); return; }
+  if(S.gated){
+    document.getElementById('gateOverlay')?.classList.add('on');
+    showGateAlert(); return;
+  }
+
+  const url = document.getElementById('ytUrl').value.trim();
+  if(!url){ alert('유튜브 URL을 입력하세요.'); return; }
+  const vid = parseVid(url);
+  if(!vid){ alert('올바른 유튜브 URL이 아닙니다.'); return; }
+
+  document.getElementById('anaBtn').disabled=true;
+  document.getElementById('vocabCard').classList.remove('on');
+  setLoad(true,'영상 주제를 파악하는 중...');
+
+  try {
+    const lvDesc = {
+      beginner:'완전 초보(A1-A2): 아주 쉬운 기초 단어만',
+      middle:'중학생(A2-B1): 중학교 교과서 수준',
+      high:'고등학생(B1-B2): 수능/내신 어휘',
+      college:'대학생(B2-C1): 토익700+/토플',
+      worker:'직장인(C1-C2): 비즈니스/전문 영어'
+    }[S.level];
+
+    setLoad(true,'Claude AI가 단어를 선별하는 중...');
+
+    const prompt = `당신은 한국인 대상 영어 교육 전문가입니다.
+유튜브 영상 ID "${vid}" 의 영상 주제와 관련된 영어 표현을 학습자 수준에 맞게 선별해주세요.
+학습자 수준: ${lvDesc}
+
+아래 JSON 배열 형식으로만 응답하세요. 마크다운(\`\`\`) 절대 사용 금지:
+
+[
+{"type":"word","en":"accomplish","ko":"성취하다, 이루다","example":"You can accomplish your goals."},
+{"type":"phrase","en":"come up with","ko":"생각해내다, 떠올리다","example":"Can you come up with a solution?"},
+{"type":"native","en":"That makes sense","ko":"이해됐어, 말이 되네","example":"Oh, that makes sense now."}
+]
+
+규칙:
+- type: "word"(핵심 영단어) / "phrase"(구동사·숙어) / "native"(한국인이 잘 안 쓰는 원어민 표현)
+- word 10개, phrase 8개, native 7개 = 총 25개
+- 이 영상 주제와 관련성 높은 표현 선택
+- example은 짧고 자연스러운 영어 문장
+- JSON 배열만 반환, 다른 텍스트 없음`;
+
+    let raw = await claude(prompt, 1400);
+    raw = raw.replace(/```json|```/g,'').trim();
+
+    let vocab;
+    try { vocab = JSON.parse(raw); }
+    catch(e){ vocab = fallback(S.level); }
+
+    // sanitize
+    vocab = vocab.filter(v=>v.en&&v.ko&&['word','phrase','native'].includes(v.type));
+
+    curVocab = vocab;
+
+    // save to state
+    const sid = Date.now();
+    const tagged = vocab.map(v=>({...v,sid}));
+    S.wordBank    = [...S.wordBank, ...tagged];
+    S.sessionVocab= [...S.sessionVocab, ...tagged];
+    S.sessionCount++;
+    S.history.unshift({ vid, url, count:vocab.length, date: new Date().toLocaleDateString('ko-KR') });
+    if(S.history.length>20) S.history=S.history.slice(0,20);
+
+    if(S.sessionCount>0 && S.sessionCount%5===0) S.gated=true;
+    saveS();
+
+    setLoad(false);
+    renderVocab();
+    renderHistory();
+    updateUI();
+
+    if(S.gated) setTimeout(showGateAlert,500);
+
+  } catch(e){
+    setLoad(false);
+    alert('오류: '+e.message);
+  }
+  document.getElementById('anaBtn').disabled=false;
+}
+
+function parseVid(url){
+  const m=url.match(/(?:v=|\/embed\/|\.be\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m?m[1]:null;
+}
+
+function setLoad(show,txt=''){
+  document.getElementById('loading').style.display=show?'block':'none';
+  if(txt) document.getElementById('loadingTxt').textContent=txt;
+}
+
+function showGateAlert(){
+  if(confirm('🔒 5회 학습 완료!\n시험을 보고 나서 다음 영상을 분석할 수 있습니다.\n지금 시험을 시작할까요?')){
+    openTest();
+  }
+}
+
+// ─── VOCAB RENDER ─────────────────────────────────
+function renderVocab(){
+  const card = document.getElementById('vocabCard');
+  card.classList.add('on');
+
+  const wc=curVocab.filter(v=>v.type==='word').length;
+  const pc=curVocab.filter(v=>v.type==='phrase').length;
+  const nc=curVocab.filter(v=>v.type==='native').length;
+  document.getElementById('vcTitle').textContent='단어장 — '+curVocab.length+'개';
+  document.getElementById('vcMeta').textContent=`단어 ${wc} · 구동사 ${pc} · 원어민 ${nc}`;
+
+  renderVocabList();
+  document.getElementById('testCta').style.display='block';
+}
+
+function renderVocabList(){
+  const body  = document.getElementById('vcBody');
+  const list  = curTab==='all' ? curVocab : curVocab.filter(v=>v.type===curTab);
+  if(!list.length){
+    body.innerHTML='<div class="empty-hint"><div class="ei">📖</div>해당 유형이 없습니다.</div>';
+    return;
+  }
+  body.innerHTML = list.map((v,i)=>`
+    <div class="wi" style="animation-delay:${i*0.04}s">
+      <div class="wi-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="wi-body">
+        <div class="wi-en" style="color:${v.type==='word'?'var(--w)':v.type==='phrase'?'var(--p)':'var(--n)'}"
+             onmouseenter="showTip(event,'${esc(v.en)}','${esc(v.ko)}')" onmouseleave="hideTip()">
+          ${esc(v.en)}
+        </div>
+        <div class="wi-ko">${esc(v.ko)}</div>
+        ${v.example?`<div class="wi-ex">${esc(v.example)}</div>`:''}
+      </div>
+      <span class="wi-tag ${v.type==='word'?'tt-w':v.type==='phrase'?'tt-p':'tt-n'}">
+        ${v.type==='word'?'단어':v.type==='phrase'?'구동사':'원어민'}
+      </span>
+    </div>`).join('');
+}
+
+function setTab(tab,btn){
+  curTab=tab;
+  document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderVocabList();
+}
+
+// ─── HISTORY ──────────────────────────────────────
+function renderHistory(){
+  const body=document.getElementById('histBody');
+  if(!S.history.length){
+    body.innerHTML='<div class="empty-hint" style="padding:20px 0"><div class="ei" style="font-size:28px">📂</div>아직 분석 기록이 없습니다.</div>';
+    return;
+  }
+  body.innerHTML=S.history.slice(0,8).map((h,i)=>`
+    <div class="hist-item">
+      <div class="hist-num">#${i+1}</div>
+      <div class="hist-info">
+        <div class="hist-url">${h.vid}</div>
+        <div class="hist-cnt">${h.count}개 · ${h.date}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearHistory(){
+  if(!confirm('학습 기록을 초기화할까요?\n(API 키와 수준 설정은 유지됩니다)')) return;
+  S={...S,sessionCount:0,testCount:0,wordBank:[],sessionVocab:[],history:[],cycleWrong:[],totalTestQs:0,gated:false,scores:[]};
+  curVocab=[];
+  saveS(); updateUI(); renderHistory();
+  document.getElementById('vocabCard').classList.remove('on');
+  document.getElementById('testCta').style.display='none';
+}
+
+// ─── UI UPDATE ────────────────────────────────────
+function updateUI(){
+  const ses = S.sessionCount;
+  document.getElementById('hSes').textContent   = ses%5||(ses>0?5:0);
+  document.getElementById('hTest').textContent  = S.testCount;
+  document.getElementById('hWords').textContent = S.wordBank.length;
+  document.getElementById('stSes').textContent  = ses;
+  document.getElementById('stWords').textContent= S.wordBank.length;
+  document.getElementById('stTests').textContent= S.testCount;
+  const avg = S.scores.length ? Math.round(S.scores.reduce((a,b)=>a+b,0)/S.scores.length) : '-';
+  document.getElementById('stAvg').textContent  = avg==='-' ? '-' : avg+'점';
+
+  // session dots
+  document.querySelectorAll('.sdot').forEach(d=>{
+    const n=+d.dataset.n;
+    if(n===6) return;
+    d.classList.remove('done','curr');
+    const pos=ses%5;
+    const filled = pos===0&&ses>0 ? 5 : pos;
+    if(n<=filled)      d.classList.add('done');
+    else if(n===filled+1) d.classList.add('curr');
+  });
+
+  document.getElementById('gateBanner').classList.toggle('on',S.gated);
+  updateAkUI();
+}
+
+// ─── TOOLTIP ──────────────────────────────────────
+function showTip(e,en,ko){
+  const t=document.getElementById('tip');
+  document.getElementById('tipEn').textContent=en;
+  document.getElementById('tipKo').textContent=ko;
+  t.style.left=(e.pageX+14)+'px';
+  t.style.top =(e.pageY-46)+'px';
+  t.classList.add('on');
+}
+function hideTip(){ document.getElementById('tip').classList.remove('on'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ═══════════════════════════════════════════════
+//  TEST ENGINE
+// ═══════════════════════════════════════════════
+let tQs=[], tAns={}, tIdx=0;
+
+function openTest(){
+  let pool;
+  const isRetry = S.totalTestQs>=100 && S.cycleWrong.length>0;
+  if(isRetry){
+    pool=[...S.cycleWrong];
+    S.cycleWrong=[]; S.totalTestQs=0;
+    document.getElementById('testSub').textContent='⚡ 오답 재시험';
+  } else {
+    pool = S.sessionVocab.length ? S.sessionVocab : S.wordBank;
+    document.getElementById('testSub').textContent='20문제 무작위 출제';
+  }
+  if(!pool.length){ alert('단어장이 비어있습니다. 먼저 영상을 분석해주세요.'); return; }
+
+  tQs=makeQs(pool,20); tAns={}; tIdx=0;
+  document.getElementById('scRes').classList.remove('on');
+  document.getElementById('tNav').style.display='flex';
+  document.getElementById('qCont').style.display='block';
+  document.getElementById('liveSc').textContent='0 / 0';
+  renderQ(0);
+  document.getElementById('testOverlay').classList.add('on');
+}
+
+function closeTest(){
+  document.getElementById('testOverlay').classList.remove('on');
+}
+
+function makeQs(pool,n){
+  const sh=[...pool].sort(()=>Math.random()-.5);
+  const src=sh.slice(0,Math.min(n*3,sh.length));
+  const qs=[];
+  src.forEach((item,i)=>{
+    const t=i%3;
+    if(t===0) qs.push({qt:'eko',item,prompt:item.en, ans:item.ko});
+    else if(t===1) qs.push({qt:'koe',item,prompt:item.ko, ans:item.en});
+    else qs.push({qt:'exp',item,prompt:item.example||item.en, ans:item.ko});
+  });
+  return qs.sort(()=>Math.random()-.5).slice(0,n);
+}
+
+function renderQ(i){
+  const q=tQs[i]; if(!q) return;
+  const tot=tQs.length;
+  document.getElementById('qCtr').textContent=`${i+1} / ${tot}`;
+  document.getElementById('tpFill').style.width=`${(i+1)/tot*100}%`;
+
+  const tname=q.qt==='eko'?'영어 → 한국어':q.qt==='koe'?'한국어 → 영어':'표현 해석';
+  const tcls =q.qt==='eko'?'qb1':q.qt==='koe'?'qb2':'qb3';
+  const isKo =q.qt==='koe';
+  const ex=tAns[i]; const checked=ex!==undefined;
+  const ok=checked&&norm(ex.v)===norm(q.ans);
+
+  document.getElementById('qCont').innerHTML=`
+    <div class="qcard">
+      <span class="qbadge ${tcls}">Q${i+1}. ${tname}</span>
+      <div class="qprompt ${isKo?'ko':''}">${esc(q.prompt)}</div>
+      <input class="ans-in ${checked?(ok?'ok':'fail'):''}"
+             id="ain_${i}" type="text"
+             placeholder="${q.qt==='koe'?'영어로 입력...':'한국어로 입력...'}"
+             value="${esc(ex?.v||'')}"
+             ${checked?'disabled':''}
+             onkeydown="if(event.key==='Enter') chk(${i})"/>
+      <div class="ans-fb ${checked?'on':''}" id="fb_${i}">
+        ${checked?(ok?`<span class="fb-ok">✓ 정답!</span>`:`<span class="fb-fail">✗ 오답 — 정답: <b>${esc(q.ans)}</b></span>`):''}
+      </div>
+      ${!checked?`<button class="ck-btn" onclick="chk(${i})">확인</button>`:''}
+    </div>`;
+
+  document.getElementById('prevBtn').disabled=i===0;
+  const nb=document.getElementById('nextBtn');
+  const isLast=i===tot-1;
+  if(isLast){ nb.textContent='📊 결과 보기'; nb.onclick=submit; }
+  else        { nb.textContent='다음 →';       nb.onclick=nextQ; }
+
+  setTimeout(()=>{ const inp=document.getElementById(`ain_${i}`); if(inp&&!inp.disabled) inp.focus(); },60);
+}
+
+function norm(s){ return String(s||'').toLowerCase().trim().replace(/[.,!?~]/g,'').replace(/\s+/g,' '); }
+
+function chk(i){
+  const inp=document.getElementById(`ain_${i}`);
+  if(!inp||inp.disabled) return;
+  const q=tQs[i]; const v=inp.value; if(!v.trim()) return;
+  const ok=norm(v)===norm(q.ans)||
+    q.ans.split(/[,\/]/).some(p=>norm(v).includes(norm(p.trim()))&&p.trim().length>2);
+  tAns[i]={v,ok};
+  inp.classList.add(ok?'ok':'fail'); inp.disabled=true;
+  const fb=document.getElementById(`fb_${i}`);
+  fb.innerHTML=ok?`<span class="fb-ok">✓ 정답!</span>`:`<span class="fb-fail">✗ 오답 — 정답: <b>${esc(q.ans)}</b></span>`;
+  fb.classList.add('on');
+  const ans=Object.values(tAns);
+  document.getElementById('liveSc').textContent=`${ans.filter(a=>a.ok).length} / ${ans.length}`;
+  document.querySelector('.ck-btn')?.remove();
+  setTimeout(()=>{ if(i<tQs.length-1) nextQ(); },650);
+}
+
+function prevQ(){ if(tIdx>0){tIdx--;renderQ(tIdx);} }
+function nextQ(){ if(tIdx<tQs.length-1){tIdx++;renderQ(tIdx);} }
+
+function submit(){
+  const tot=tQs.length;
+  const corr=Object.values(tAns).filter(a=>a.ok).length;
+  const pct=Math.round(corr/tot*100);
+
+  const wrongItems=tQs.filter((q,i)=>tAns[i]&&!tAns[i].ok).map(q=>q.item);
+  S.cycleWrong=[...(S.cycleWrong||[]),...wrongItems];
+  S.totalTestQs=(S.totalTestQs||0)+tot;
+  S.testCount++;
+  S.scores=[...(S.scores||[]),pct];
+
+  if(S.testCount%5===0){
+    S.sessionVocab=[]; S.gated=false; S.sessionCount=0;
+  } else {
+    S.gated=false;
+  }
+  saveS(); updateUI();
+
+  document.getElementById('qCont').style.display='none';
+  document.getElementById('tNav').style.display='none';
+  document.getElementById('scBig').textContent=pct+'점';
+  document.getElementById('scMsg').textContent=
+    pct>=90?'🏆 완벽합니다!':pct>=70?'👍 잘 했어요!':pct>=50?'😊 계속 노력하세요!':'💪 다시 도전해봐요!';
+  document.getElementById('scC').textContent=corr;
+  document.getElementById('scW').textContent=tot-corr;
+  document.getElementById('scT').textContent=tot;
+
+  let note='';
+  if(S.totalTestQs>=100) note='⚡ 오답 100문제 누적! 다음 시험은 오답만으로 출제됩니다.';
+  else if(S.cycleWrong.length) note=`📌 누적 오답 ${S.cycleWrong.length}개 (100개 시 오답 재시험)`;
+  document.getElementById('scNote').textContent=note;
+  document.getElementById('scRes').classList.add('on');
+}
+
+// ─── FALLBACK VOCAB ───────────────────────────────
+function fallback(lv){
+  return [
+    {type:'word',  en:'accomplish',     ko:'성취하다, 이루다',          example:'You can accomplish your goals.'},
+    {type:'word',  en:'significant',    ko:'중요한, 상당한',             example:'A significant improvement.'},
+    {type:'word',  en:'perspective',    ko:'관점, 시각',                 example:'From a different perspective.'},
+    {type:'word',  en:'opportunity',    ko:'기회',                       example:'This is a great opportunity.'},
+    {type:'word',  en:'consistent',     ko:'일관된, 꾸준한',             example:'Be consistent every day.'},
+    {type:'word',  en:'strategy',       ko:'전략',                       example:'We need a better strategy.'},
+    {type:'word',  en:'demonstrate',    ko:'보여주다, 입증하다',          example:'Let me demonstrate this.'},
+    {type:'word',  en:'essential',      ko:'필수적인',                   example:"It's essential to practice."},
+    {type:'word',  en:'acknowledge',    ko:'인정하다, 알아보다',          example:'I acknowledge your effort.'},
+    {type:'word',  en:'leverage',       ko:'활용하다',                   example:'Leverage your strengths.'},
+    {type:'phrase',en:'come up with',   ko:'생각해내다',                 example:'Can you come up with a plan?'},
+    {type:'phrase',en:'figure out',     ko:'이해하다, 알아내다',          example:"I can't figure it out."},
+    {type:'phrase',en:'give up',        ko:'포기하다',                   example:"Don't give up!"},
+    {type:'phrase',en:'end up',         ko:'결국 ~하게 되다',             example:'We ended up laughing.'},
+    {type:'phrase',en:'run into',       ko:'우연히 만나다',              example:'I ran into an old friend.'},
+    {type:'phrase',en:'pull off',       ko:'해내다, 성공하다',            example:'She pulled it off!'},
+    {type:'phrase',en:'keep up with',   ko:'따라가다',                   example:'Hard to keep up with changes.'},
+    {type:'phrase',en:'narrow down',    ko:'좁히다, 압축하다',            example:"Let's narrow down the options."},
+    {type:'native',en:'That makes sense',   ko:'이해됐어, 말이 되네',         example:'Oh, that makes sense now.'},
+    {type:'native',en:'Fair enough',        ko:'그럴 만하지, 맞는 말이야',    example:'Fair enough, I get it.'},
+    {type:'native',en:'On the same page',   ko:'같은 생각이다',               example:'Are we on the same page?'},
+    {type:'native',en:'Touch base',         ko:'연락하다, 확인하다',           example:"Let's touch base later."},
+    {type:'native',en:'That being said',    ko:'그렇긴 해도',                 example:"That being said, let's try."},
+    {type:'native',en:'Bite the bullet',    ko:'이를 악물고 참다',            example:'Just bite the bullet.'},
+    {type:'native',en:'Hit the nail on the head', ko:'정확히 맞히다',         example:'You hit the nail on the head.'},
+  ];
+}
+
+// ─── INIT ─────────────────────────────────────────
+loadS();
+if(S.level){
+  document.getElementById('lvLabel').textContent=LV_NAME[S.level];
+  document.querySelectorAll('.lv-opt').forEach(e=>e.classList.toggle('sel',e.dataset.lv===S.level));
+}
+renderHistory();
+updateUI();
+
+// API 키: 저장된 키 있으면 절대 모달 안 띄움
+// 처음 실행(키 없음)일 때만 한 번 안내
+if(!getAk()) {
+  setTimeout(openAkModal, 400);
+} else if(!S.level) {
+  // 키는 있는데 수준 미설정 시에만 수준 모달
+  setTimeout(openLvModal, 400);
+}
+// 키도 있고 수준도 있으면 아무것도 안 띄움 → 바로 사용 가능
+</script>
+</body>
+</html>
